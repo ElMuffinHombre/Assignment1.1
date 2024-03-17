@@ -42,13 +42,24 @@ class TypeEffectiveness:
         Returns:
             float: The effectiveness of the attack, as a float value between 0 and 4.
         """
-        raise NotImplementedError
+
+            #Read from the type_effectiveness.csv 
+        with open("type_effectiveness.csv",'r') as col:
+            
+            #Helps with new lines in the csv
+            col = [row.rstrip() for row in col]
+        
+        EFFECT_TABLE = []
+        for row in col:
+            Transfer = row.split(',')
+            EFFECT_TABLE.append(Transfer) 
+        return float(EFFECT_TABLE[attack_type.value + 1][defend_type.value])
 
     def __len__(self) -> int:
         """
         Returns the number of types of Pokemon
         """
-        raise NotImplementedError
+        return len(PokeType)
 
 
 class Pokemon(ABC): # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -161,7 +172,7 @@ class Pokemon(ABC): # pylint: disable=too-few-public-methods, too-many-instance-
         Returns:
             int: The damage that this Pokemon inflicts on the other Pokemon during an attack.
         """
-        raise NotImplementedError
+        return self.battle_power*TypeEffectiveness.get_effectiveness(self,other_pokemon)
 
     def defend(self, damage: int) -> None:
         """
@@ -189,7 +200,12 @@ class Pokemon(ABC): # pylint: disable=too-few-public-methods, too-many-instance-
         Evolves the Pokemon to the next stage in its evolution line, and updates
           its attributes accordingly.
         """
-        raise NotImplementedError
+        self.name = self.evolution_line+1
+        self.battle_power *=1.5
+        self.health *=1.5
+        self.speed *=1.5
+        self.defence *=1.5
+
 
     def is_alive(self) -> bool:
         """
