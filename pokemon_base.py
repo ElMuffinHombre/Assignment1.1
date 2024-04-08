@@ -41,18 +41,18 @@ class TypeEffectiveness:
 
         Returns:
             float: The effectiveness of the attack, as a float value between 0 and 4.
+        Time Complexity: O(1)
         """
 
             #Read from the type_effectiveness.csv 
         with open("type_effectiveness.csv",'r') as col:
             
-            #Helps with new lines in the csv
             col = [row.rstrip() for row in col]
         
         EFFECT_TABLE = []
         for row in col:
             Transfer = row.split(',')
-            EFFECT_TABLE.append(Transfer) 
+            EFFECT_TABLE.append(Transfer)
         return float(EFFECT_TABLE[attack_type.value + 1][defend_type.value])
 
     def __len__(self) -> int:
@@ -172,7 +172,7 @@ class Pokemon(ABC): # pylint: disable=too-few-public-methods, too-many-instance-
         Returns:
             int: The damage that this Pokemon inflicts on the other Pokemon during an attack.
         """
-        return self.battle_power*TypeEffectiveness.get_effectiveness(self,other_pokemon)
+        return self.battle_power*TypeEffectiveness.get_effectiveness(self.get_poketype(),other_pokemon.get_poketype())
 
     def defend(self, damage: int) -> None:
         """
@@ -199,8 +199,9 @@ class Pokemon(ABC): # pylint: disable=too-few-public-methods, too-many-instance-
         """
         Evolves the Pokemon to the next stage in its evolution line, and updates
           its attributes accordingly.
+        Time Complexity: O(1) 
         """
-        self.name = self.evolution_line+1
+        self.name = self.evolution_line[self.evolution_line.index(self.name)+1]
         self.battle_power *=1.5
         self.health *=1.5
         self.speed *=1.5
