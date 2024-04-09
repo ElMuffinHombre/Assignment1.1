@@ -70,15 +70,13 @@ class Battle:
             rec_data_structure = battle_modes_data_structures[self.battle_mode]
         
             #Check if both trainers are using the recommended data structure
-            if not isinstance(self.trainer_1, type(rec_data_structure)) or \
-                not isinstance(self.trainer_2, type(rec_data_structure)):
-                #If wrong data structure
-                raise ValueError("Teams are the wrong data structure")
+            if not isinstance(self.trainer_1.team, type(rec_data_structure)) or not isinstance(self.trainer_2.team,type(rec_data_structure)):
+                self.trainer_1.team = rec_data_structure
+                self.trainer_2.team = rec_data_structure
+
+            
         
-        team1 = PokeTeam()
-        team2 = PokeTeam()
-        
-        return team1, team2
+        return self.trainer_1.team, self.trainer_2.team
 
 
     def set_battle(self) -> PokeTeam | None:
@@ -88,7 +86,7 @@ class Battle:
         Parameters: None
 
         Time Complexity
-        O(n) n is num of pokemon in eahc team
+        O(n) n is num of pokemon in each team
         """
 
 
@@ -127,31 +125,64 @@ class Battle:
         (n^2)
 
         """
-
-        if self.trainer_1.team[0].get_speed() > self.trainer_2.team[0].get_speed():
-            first_attacker = self.trainer_1.team
-            second_attacker = self.trainer_2.team
-        else :
-            first_attacker = self.trainer_2.team
-            second_attacker = self.trainer_1.team
-
+        #Making sure the teams are assembled correctly again
         self.trainer_1.team.rot_team()
         self.trainer_2.team.rot_team()
 
-        while len(self.trainer_1.team) != 0 and len(self.trainer_2.team)!= 0:
-            #Saving the served Pokemon
-            Pokemon_1 = first_attacker.serve()
-            Pokemon_2 = second_attacker.serve()
+        #Saving speed checks
+        Speed_check_1 = self.trainer_1.team.serve()
+        Speed_check_2 = self.trainer_2.team.serve()
+
+        #Checking the Speed
+        if Speed_check_1.get_speed() > Speed_check_2.get_speed():
+            self.trainer_1.team.append(Speed_check_1)
+            self.trainer_2.team.append(Speed_check_2)
+            first_attacker = self.trainer_1.team
+            second_attacker = self.trainer_2.team
+            case = 1
+
+        else :
+            self.trainer_1.team.append(Speed_check_1)
+            self.trainer_2.team.append(Speed_check_2)
+            first_attacker = self.trainer_2.team
+            second_attacker = self.trainer_1.team
+            case = 2
+
+
+        Pokemon_1 = first_attacker.serve()
+        Pokemon_2 = second_attacker.serve()
+
+        #Actual Battle Loop the while loop 
+        while True:
+            while Pokemon_1.is_alive() == 0:
+                try:
+                    Pokemon_1 = first_attacker.serve()
+                except Exception:
+                    print("This")
+                    if case == 1:
+                        return self.trainer_2
+                    elif case ==2: 
+                        return self.trainer_1
+                
+                
+            while Pokemon_2.is_alive() == 0:
+                try:
+                    Pokemon_2 = second_attacker.serve()
+                except Exception:
+                    if case == 1:
+                        return self.trainer_1
+                    elif case ==2: 
+                        return self.trainer_2                    
+
 
             #Attack 1 
             Pokemon_2.defend(Pokemon_1.attack(Pokemon_2))
-            if Pokemon_2.is_alive() == True:
+            if Pokemon_2.is_alive() == 1:
                 second_attacker.append(Pokemon_2)
-            elif Pokemon_2.is_alive() != True:
+            elif Pokemon_2.is_alive() != 1:
                 Pokemon_2 = second_attacker.serve()
                 Pokemon_1.level_up()
 
-            first_attacker.append(Pokemon_1)
 
             #Attack 2
             Pokemon_1.defend(Pokemon_2.attack(Pokemon_1))
@@ -160,21 +191,7 @@ class Battle:
             elif Pokemon_1.is_alive() != True:
                 Pokemon_1 = first_attacker.serve()
                 Pokemon_2.level_up()
-
-            second_attacker.append(Pokemon_2)
-
             #Loop until over
-        print("winner is: ")
-        if len(self.trainer_1.team) == 0:
-            print("2")
-            return self.trainer_2
-        elif len(self.trainer_2.team) == 0:
-            print("1")
-            return self.trainer_1
-        else:
-            print("No Winner")
-            return None
-
 
 
     def optimise_battle(self) -> PokeTeam | None:
@@ -214,11 +231,9 @@ if __name__ == '__main__':
     
     t1 = Trainer('Ash')
     t1.pick_team("random")
-
     t2 = Trainer('Gary')
     t2.pick_team('random')
-    b = Battle(t1, t2, BattleMode.SET)
-
+    b = Battle(t1, t2, BattleMode.ROTATE)
     winner = b.commence_battle()
     if winner is None:
         print("Its a draw")
