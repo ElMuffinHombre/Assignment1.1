@@ -92,7 +92,27 @@ class PokeTeam:
             self.team_count += 1
 
     def regenerate_team(self) -> None:
-        raise NotImplementedError
+        """
+        Returns all Pokemon health to full
+
+        Time Complexity
+        O(1)
+        """
+        for i in range(PokeTeam.TEAM_LIMIT):
+            Restored_Pokemon = self.team.serve()
+            level = Restored_Pokemon.get_level()
+            PokeClass = Restored_Pokemon.__class()
+            for i in range(level):
+                PokeClass.level_up()
+            self.team.append(PokeClass)
+        return self.team
+            
+
+
+
+            
+
+
 
     def assign_team(self, criterion: str = None) -> None:
         """
@@ -163,28 +183,11 @@ class PokeTeam:
             O(n)
      
         """
-        while True:
-            try:
-                print("How would you like to assemble your team : ")
-                print("Please choose between MANUAL or RANDOM : \n")
-                Assembly = str(input()).upper()
-                if Assembly == "MANUAL" or Assembly == "M":
-                    self.choose_manually()
-                elif Assembly == "RANDOM" or Assembly == "R":
-                    self.choose_randomly()
-                else: 
-                    print("Invalid input. Please try again")
-                    continue
-                break
-            except ValueError:
-                print("Invalid input. Please try again")
-                
         if battle_mode == BattleMode.SET:
             #StackADT
             return self.set_team()
         
         elif battle_mode == BattleMode.ROTATE:
-            print("This was called")
             #Circular Queue
             return self.rot_team()
         
@@ -335,7 +338,7 @@ class PokeTeam:
         Returns:
           Team as a Ciruclar Queue
         """
-        RotateTeam = CircularQueue(PokeTeam.TEAM_LIMIT)
+        RotateTeam = CircularQueue(PokeTeam.TEAM_LIMIT*2)
         for i in self.team:
             RotateTeam.append(i)
         self.team = RotateTeam
@@ -349,6 +352,7 @@ class PokeTeam:
 
 
 class Trainer:
+
 
     def __init__(self,name: str) -> None:
         """
@@ -424,5 +428,6 @@ if __name__ == '__main__':
     t = Trainer('Ash')
     print(t)
     t.pick_team("Random")
+
     print(t)
     print(t.get_team())
